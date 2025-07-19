@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>💼 Investment Cockpit</title>
+  <style>
+    body { font-family: Arial; background: #f5f7fa; padding: 20px; margin: 0; }
+    header, section { background: #fff; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 0 5px #ccc; }
+    input, select, button { margin: 5px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+    canvas { max-width: 100%; height: 300px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>📈 Live Ticker</h2>
+    <div id="tickerBar">🔄 Loading market status...</div>
+    <div><strong>Market Status:</strong> <span id="marketStatus"></span></div>
+  </header>
+
+  <section id="strategy">
+    <h2>🧭 My Strategy Console</h2>
+    <p><strong>Logic:</strong> PE &lt; 20, ROE &gt; 15%, EPS positive, Price ≥ ₹100, Volume &gt; 1L</p>
+    <p><strong>Goal:</strong> Long-term growth via stable mid-cap stocks</p>
+    <p><strong>Exit:</strong> Partial @ +25% gain or EPS dip over 2 quarters</p>
+  </section>
+
+  <section>
+    <h2>📊 Stock Screener</h2>
+    <input type="number" id="minPE" placeholder="Min PE" />
+    <input type="number" id="maxPE" placeholder="Max PE" />
+    <button onclick="filterStocks()">Apply Filter</button>
+    <button onclick="exportCSV()">📤 Export CSV</button>
+    <table id="stockTable"></table>
+  </section>
+
+  <section>
+    <h2>📈 Chart Viewer</h2>
+    <input type="text" id="symbolInput" placeholder="Enter Symbol" />
+    <button onclick="loadChart()">Load Chart</button>
+    <canvas id="stockChart"></canvas>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // ✅ Dummy stock data
+    const stocks = [
+      { name: "INFY", pe: 18, roe: 20, eps: 50, volume: 120000, price: 1450 },
+      { name: "SBIN", pe: 12, roe: 16, eps: 60, volume: 98000, price: 550 },
+      { name: "TCS", pe: 22, roe: 25, eps: 80, volume: 150000, price: 3200 }
+    ];
+
+    // 🎯 Screener logic
+    function filterStocks() {
+      const min = parseFloat(document.getElementById("minPE").value) || 0;
+      const max = parseFloat(document.getElementById("maxPE").value) || 100;
+      const filtered = stocks.filter(s => s.pe >= min && s.pe <= max);
+      renderTable(filtered);
+    }
+
+    function renderTable(data) {
+      const table = document.getElementById("stockTable");
+      table.innerHTML = `<tr><th>Stock</th><th>PE</th><th>ROE</th><th>EPS</th><th>Price</th></tr>`;
+      data.forEach(s => {
+        table.innerHTML += `<tr><td>${s.name}</td><td>${s.pe}</td><td>${s.roe}</td><td>${s.eps}</td><td>₹${s.price}</td></tr>`;
+      });
+    }
+
+    // 📤 Export CSV
+    function exportCSV() {
+      let csv = "Stock,PE,ROE,EPS,Price\n";
+      stocks.forEach(s => {
+        csv += `${s.name},${s.pe},${s.roe},${s.eps},${s.price}\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "screener.csv";
+      link.click();
+    }
+
+    // 📈 Chart Viewer (Dummy Line Chart)
+    function loadChart() {
+      const ctx = document.getElementById("stockChart").getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          datasets: [{
+            label: "Price",
+            data: [180, 182, 185, 183, 184],
+            borderColor: "#0078d4",
+            backgroundColor: "transparent"
+          }]
+        }
+      });
+    }
+
+    // 🧠 Market Status
+    function updateMarketStatus() {
+      const now = new Date();
+      const hrs = now.getHours();
+      const mins = now.getMinutes();
+      const current = hrs * 60 + mins;
+      const status = current < 555 ? "⏳ Pre-Market" :
+                    current <= 930 ? "🟢 Market Open" :
+                    "🔴 Market Closed";
+      document.getElementById("marketStatus").innerText = status;
+      document.getElementById("tickerBar").innerText = "NIFTY: 19870 ▲ | USDINR: 83.10 ▼ | BRENT: $87.45 ▲";
+    }
+    updateMarketStatus();
+  </script>
+</body>
+</html>
